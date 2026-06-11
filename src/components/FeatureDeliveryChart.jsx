@@ -12,20 +12,16 @@ import {
 import './FeatureDeliveryChart.css';
 
 const FeatureDeliveryChart = ({ baselineCycleTime, currentCycleTime, alpha }) => {
-  // Generate data showing cumulative features delivered over 12 weeks
-  const weeks = 12;
+  // Generate data showing cumulative features delivered over 26 weeks.
+  // Cycle times here are already in WEEKS, matching the new engine.
+  const weeks = 26;
   const data = [];
 
   for (let week = 0; week <= weeks; week++) {
-    // Baseline scenario (no debt)
-    const baselineFeatures = (week * 7) / baselineCycleTime;
-    
-    // Current scenario (with debt)
-    const currentFeatures = (week * 7) / currentCycleTime;
-    
-    // "Fixed" scenario (if debt was paid down to 20%)
+    const baselineFeatures = week / baselineCycleTime;
+    const currentFeatures = week / currentCycleTime;
     const fixedCycleTime = baselineCycleTime * Math.exp(alpha * 0.2);
-    const fixedFeatures = (week * 7) / fixedCycleTime;
+    const fixedFeatures = week / fixedCycleTime;
 
     data.push({
       week,
@@ -37,9 +33,9 @@ const FeatureDeliveryChart = ({ baselineCycleTime, currentCycleTime, alpha }) =>
 
   return (
     <div className="chart-container">
-      <h3>Feature Delivery Over Time</h3>
+      <h3>Cumulative Feature Delivery</h3>
       <p className="chart-description">
-        Cumulative features delivered: baseline vs current debt vs after fixing debt
+        Eq. 4 in action: features shipped over time at baseline V₀, current V(D), and after partial remediation to D = 20%.
       </p>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>

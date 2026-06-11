@@ -25,9 +25,9 @@ const DebtVsCycleTimeChart = ({ baselineCycleTime, alpha }) => {
 
   return (
     <div className="chart-container">
-      <h3>Technical Debt vs Cycle Time</h3>
+      <h3>Technical Debt vs Cycle Time (Eq. 5)</h3>
       <p className="chart-description">
-        Exponential relationship: CT = CT₀ × e^(αD)
+        Exponential cycle-time inflation: CT = CT₀ · e^(αD). CT₀ = {baselineCycleTime} wks, α = {alpha}.
       </p>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -39,7 +39,7 @@ const DebtVsCycleTimeChart = ({ baselineCycleTime, alpha }) => {
             tick={{ fill: '#666' }}
           />
           <YAxis
-            label={{ value: 'Cycle Time (days)', angle: -90, position: 'insideLeft', fill: '#666' }}
+            label={{ value: 'Cycle Time (weeks)', angle: -90, position: 'insideLeft', fill: '#666' }}
             stroke="#444"
             tick={{ fill: '#666' }}
           />
@@ -47,7 +47,7 @@ const DebtVsCycleTimeChart = ({ baselineCycleTime, alpha }) => {
             contentStyle={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: '2px' }}
             labelStyle={{ color: '#999' }}
             itemStyle={{ color: '#e5e5e5' }}
-            formatter={(value) => [`${value} days`, 'Cycle Time']}
+            formatter={(value) => [`${value} wks`, 'Cycle Time']}
             labelFormatter={(label) => `Debt: ${label}%`}
           />
           <Legend wrapperStyle={{ color: '#999' }} />
