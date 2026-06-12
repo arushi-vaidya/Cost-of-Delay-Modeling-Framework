@@ -638,7 +638,77 @@ export const calculateAllMetrics = (inp) => {
 };
 
 // =============================================================================
-//  10. Defaults
+//  10. Sensitivity analysis  (one-at-a-time ±perturbation, tornado output)
+// =============================================================================
+
+/** Build a simulation config from dashboard input object. */
+const makeSimCfg = (inp) => ({
+  horizonWeeks: inp.horizonWeeks,
+  alpha: inp.alpha,
+  beta: inp.beta,
+  i: inp.interestRate,
+  delta: inp.newDebtRate,
+  gamma: inp.remediationRate,
+  V0: 1 / inp.baselineCycleTime,
+  B0: inp.burnRate,
+  revenuePerFeature: inp.costOfDelay,
+  n: inp.featuresInPipeline,
+  cremPerWeek: inp.cremPerWeek,
+  rAnnual: inp.discountRate,
+  pivotAnnual: inp.pivotProb,
+  R0: inp.burnRate * inp.runway * 4.345,
+  D0: inp.debtRatio,
+  ct0: inp.baselineCycleTime,
+  theta: inp.hazardTheta ?? 0.25,
+});
+
+/**
+ * OAT sensitivity: perturb each parameter ±perturbFraction and measure the
+ * change in discounted profit under the always-develop policy.
+ * Returns results sorted by total impact range (tornado order).
+ */
+export const runSensitivity = (inputs, perturbFraction = 0.2) => {
+  const baseCfg = makeSimCfg(inputs);
+  const baseNPV = simulateTrajectory(baseCfg, 'develop', null).cumProfit;
+
+  const params = [
+    { key: 'alpha',              label: 'α — CT sensitivity',           min: 0.1 },
+    { key: 'beta',               label: 'β — burn amplification',        min: 0.01 },
+    { key: 'debtRatio',          label: 'D₀ — initial debt ratio',       min: 0.01, max: 0.99 },
+    { key: 'interestRate',       label: 'i — debt interest rate',        min: 0.001, max: 0.1 },
+    { key: 'costOfDelay',        label: 'CoD — cost per feature/wk',     min: 100 },
+    { key: 'burnRate',           label: 'B₀ — base burn rate',           min: 1000 },
+    { key: 'discountRate',       label: 'r — VC discount rate',          min: 0.1, max: 0.99 },
+    { key: 'pivotProb',          label: 'π — annual pivot probability',  min: 0.01, max: 0.99 },
+    { key: 'remediationRate',    label: 'γ — remediation rate',          min: 0.001, max: 0.3 },
+    { key: 'newDebtRate',        label: 'δ — new debt accrual rate',     min: 0.001, max: 0.05 },
+    { key: 'featuresInPipeline', label: 'n — pipeline depth',            min: 1, max: 50 },
+    { key: 'cremPerWeek',        label: 'C_rem — remediation cost/wk',   min: 1000 },
+  ];
+
+  const results = params.map(({ key, label, min = 0, max = Infinity }) => {
+    const baseVal = inputs[key];
+    const lowVal  = Math.max(min, baseVal * (1 - perturbFraction));
+    const highVal = Math.min(max, baseVal * (1 + perturbFraction));
+
+    const lowNPV  = simulateTrajectory(makeSimCfg({ ...inputs, [key]: lowVal }),  'develop', null).cumProfit;
+    const highNPV = simulateTrajectory(makeSimCfg({ ...inputs, [key]: highVal }), 'develop', null).cumProfit;
+
+    return {
+      key, label, baseVal, lowVal, highVal, baseNPV,
+      lowNPV, highNPV,
+      lowDelta:  Math.round(lowNPV  - baseNPV),
+      highDelta: Math.round(highNPV - baseNPV),
+      range: Math.abs(highNPV - lowNPV),
+    };
+  });
+
+  results.sort((a, b) => b.range - a.range);
+  return { results, baseNPV };
+};
+
+// =============================================================================
+//  11. Defaults
 // =============================================================================
 
 export const getDefaultInputs = () => ({

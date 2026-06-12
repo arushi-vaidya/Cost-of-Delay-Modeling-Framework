@@ -15,6 +15,8 @@ import RADRMPolicyChart from './RADRMPolicyChart';
 import NPVChart from './NPVChart';
 import CausalChainDiagram from './CausalChainDiagram';
 import MonteCarloChart from './MonteCarloChart';
+import RADRMHeatmap from './RADRMHeatmap';
+import SensitivityChart from './SensitivityChart';
 
 import {
   getDefaultInputs,
@@ -61,11 +63,12 @@ const KPI = ({ label, value, sub, subTone, hero = false, format = (v) => v }) =>
 // ---------------------------------------------------------------------------
 
 const TAB_SECTIONS = [
-  { id: 'engine', label: 'Engineering' },
-  { id: 'finance', label: 'Financial Drag' },
-  { id: 'radrm', label: 'RADRM' },
-  { id: 'mc', label: 'Monte Carlo' },
-  { id: 'causal', label: 'Causal Chain' },
+  { id: 'engine',      label: 'Engineering' },
+  { id: 'finance',     label: 'Financial Drag' },
+  { id: 'radrm',       label: 'RADRM' },
+  { id: 'mc',          label: 'Monte Carlo' },
+  { id: 'causal',      label: 'Causal Chain' },
+  { id: 'sensitivity', label: 'Sensitivity' },
 ];
 
 const Dashboard = () => {
@@ -260,7 +263,7 @@ const Dashboard = () => {
                 <span className="section-index">02 · Visual Analytics</span>
                 <h2 className="section-title">Explore the model</h2>
                 <span className="section-sub">
-                  4 lenses · scrub the sidebar parameters to update live
+                  6 lenses · scrub the sidebar parameters to update live
                 </span>
               </div>
               <div className="section-tabs" role="tablist">
@@ -317,6 +320,7 @@ const Dashboard = () => {
                   <>
                     <DebtDynamicsChart inputs={inputs} />
                     <RADRMPolicyChart inputs={inputs} />
+                    <RADRMHeatmap inputs={inputs} />
                     <NPVChart inputs={inputs} />
                   </>
                 )}
@@ -325,6 +329,9 @@ const Dashboard = () => {
                 )}
                 {activeTab === 'causal' && (
                   <CausalChainDiagram coefs={inputs.causalCoefs} />
+                )}
+                {activeTab === 'sensitivity' && (
+                  <SensitivityChart inputs={inputs} />
                 )}
               </motion.div>
             </AnimatePresence>
